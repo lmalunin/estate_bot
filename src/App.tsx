@@ -51,6 +51,10 @@ function RegistrationForm({
   status,
   statusMessage,
   isTelegramEnvironment,
+  debugLogs,
+  setDebugLogs,
+  showDebug,
+  setShowDebug,
 }: {
   onSubmit: (e: React.FormEvent) => void;
   control: Control<FormValues>;
@@ -59,6 +63,10 @@ function RegistrationForm({
   status: "idle" | "sending" | "sent" | "error";
   statusMessage: string | null;
   isTelegramEnvironment: boolean;
+  debugLogs: string[];
+  setDebugLogs: React.Dispatch<React.SetStateAction<string[]>>;
+  showDebug: boolean;
+  setShowDebug: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return (
     <main className="app">
@@ -143,6 +151,44 @@ function RegistrationForm({
           кнопку «Регистрация». Тогда бот получит данные и поприветствует вас.
         </div>
       )}
+
+      {/* Панель отладки для Telegram WebApp */}
+      {isTelegramEnvironment && (
+        <div className="debug-panel">
+          <button
+            type="button"
+            onClick={() => setShowDebug(!showDebug)}
+            className="debug-toggle"
+          >
+            {showDebug ? "🔽 Скрыть логи" : "🔼 Показать логи"}
+          </button>
+          {showDebug && (
+            <div className="debug-logs">
+              <div className="debug-header">
+                <strong>Логи отладки:</strong>
+                <button
+                  type="button"
+                  onClick={() => setDebugLogs([])}
+                  className="debug-clear"
+                >
+                  Очистить
+                </button>
+              </div>
+              {debugLogs.length === 0 ? (
+                <p className="debug-empty">Логи появятся при отправке формы</p>
+              ) : (
+                <div className="debug-content">
+                  {debugLogs.map((log, idx) => (
+                    <div key={idx} className="debug-log-line">
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }
@@ -176,6 +222,9 @@ function App() {
     firstName: string;
     lastName: string;
   } | null>(null);
+  // Панель отладки для просмотра логов в Telegram WebApp
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     if (!telegramApp) {
@@ -197,9 +246,17 @@ function App() {
       root.style.setProperty("--tg-accent-text", theme.button_text_color);
   }, [telegramApp]);
 
+  // Функция для добавления логов в панель отладки
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
+    console.log(message); // Также в консоль для обычных браузеров
+  };
+
   const onSubmit = handleSubmit(async (values) => {
     setStatus("sending");
     setStatusMessage(null);
+    setDebugLogs([]); // Очищаем логи при новой отправке
 
     const payload = {
       firstName: values.firstName,
@@ -209,38 +266,37 @@ function App() {
 
     try {
       if (telegramApp) {
+        addDebugLog("✅ telegramApp доступен");
+        addDebugLog(`📤 Подготовка данных: ${JSON.stringify(payload)}`);
+
         // Используем встроенный механизм Telegram WebApp для отправки данных
         const dataString = JSON.stringify(payload);
-        console.log("Sending data to bot via sendData():", dataString);
-        console.log("telegramApp available:", !!telegramApp);
-        console.log(
-          "telegramApp.sendData available:",
-          typeof telegramApp.sendData === "function"
+        addDebugLog(`📦 Данные сериализованы: ${dataString.length} символов`);
+        addDebugLog(
+          `🔍 sendData доступен: ${typeof telegramApp.sendData === "function"}`
         );
 
         try {
+          addDebugLog("🚀 Вызов sendData()...");
           telegramApp.sendData(dataString);
-          console.log("sendData() called successfully with data:", dataString);
-
-          // Важно: после sendData() данные отправляются в бот
-          // Но для гарантии доставки можно использовать небольшое ожидание
-          // или закрыть WebApp (но мы не закрываем по требованию)
+          addDebugLog("✅ sendData() вызван успешно!");
+          addDebugLog("⏳ Ожидание обработки ботом (1 сек)...");
         } catch (sendError) {
+          const errorMsg = `❌ Ошибка при вызове sendData(): ${sendError}`;
+          addDebugLog(errorMsg);
           console.error("Error calling sendData():", sendError);
           throw sendError;
         }
 
         // Небольшая задержка для обработки на стороне Telegram/бота
-        // В реальности данные должны прийти мгновенно, но даем время на обработку
         await new Promise((resolve) => setTimeout(resolve, 1000));
+        addDebugLog("⏱️ Задержка завершена");
 
         // После отправки данных через sendData(), бот получит их,
         // сохранит в db.json и отправит подтверждение в чат
         // Показываем страницу приветствия только после успешной отправки
-        console.log(
-          "Showing welcome page for:",
-          values.firstName,
-          values.lastName
+        addDebugLog(
+          `👋 Показ страницы приветствия для: ${values.firstName} ${values.lastName}`
         );
         setRegisteredUser({
           firstName: values.firstName,
@@ -286,6 +342,10 @@ function App() {
       status={status}
       statusMessage={statusMessage}
       isTelegramEnvironment={isTelegramEnvironment}
+      debugLogs={debugLogs}
+      setDebugLogs={setDebugLogs}
+      showDebug={showDebug}
+      setShowDebug={setShowDebug}
     />
   );
 }

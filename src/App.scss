@@ -145,6 +145,83 @@ $field-radius: 14px;
   }
 }
 
+// Панель отладки
+.debug-panel {
+  margin-top: 16px;
+  border-radius: var(--tg-radius);
+  border: 1px solid var(--tg-border);
+  background: var(--tg-surface);
+  overflow: hidden;
+
+  .debug-toggle {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: var(--tg-bg);
+    color: var(--tg-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: var(--tg-border);
+    }
+  }
+
+  .debug-logs {
+    padding: 12px 16px;
+    max-height: 300px;
+    overflow-y: auto;
+
+    .debug-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+
+      .debug-clear {
+        padding: 4px 8px;
+        border: 1px solid var(--tg-border);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--tg-text);
+        font-size: 0.8rem;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--tg-border);
+        }
+      }
+    }
+
+    .debug-empty {
+      color: var(--tg-muted);
+      font-size: 0.85rem;
+      margin: 0;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .debug-content {
+      font-family: "Courier New", monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+
+      .debug-log-line {
+        padding: 4px 0;
+        color: var(--tg-text);
+        border-bottom: 1px solid var(--tg-border);
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .app {
     padding: 24px 16px 32px;
