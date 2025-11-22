@@ -12,8 +12,8 @@ type FormValues = {
 const REGISTRATION_HINT =
   "Эти данные увидит только бот и сразу поздоровается с вами по имени.";
 
-// URL бэкенда - можно настроить через переменные окружения
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+// Данные отправляются напрямую через Telegram WebApp API,
+// не требуется HTTP запрос к бэкенду
 
 type TelegramWindow = Window &
   typeof globalThis & {
@@ -21,13 +21,6 @@ type TelegramWindow = Window &
       WebApp?: TelegramWebApp;
     };
   };
-
-type RegisterResponse = {
-  success: boolean;
-  message: string;
-  firstName?: string;
-  lastName?: string;
-};
 
 function WelcomePage({
   firstName,
@@ -39,7 +32,9 @@ function WelcomePage({
   return (
     <main className="app">
       <div className="card welcome-card">
-        <h1>Привет, {firstName} {lastName}!</h1>
+        <h1>
+          Привет, {firstName} {lastName}!
+        </h1>
         <p className="welcome-message">
           Регистрация успешно завершена. Ваши данные сохранены.
         </p>
@@ -206,37 +201,34 @@ function App() {
     setStatus("sending");
     setStatusMessage(null);
 
+    const payload = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      timestamp: new Date().toISOString(),
+    };
+
     try {
-      const response = await fetch(`${API_URL}/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      if (telegramApp) {
+        // Используем встроенный механизм Telegram WebApp для отправки данных
+        telegramApp.sendData(JSON.stringify(payload));
+
+        // Оптимистично показываем страницу приветствия
+        // Бот получит данные через WebAppData и сохранит их
+        setRegisteredUser({
           firstName: values.firstName,
           lastName: values.lastName,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Ошибка при отправке данных");
-      }
-
-      const data: RegisterResponse = await response.json();
-
-      if (data.success && data.firstName && data.lastName) {
-        // Данные успешно сохранены, показываем страницу приветствия
-        setRegisteredUser({
-          firstName: data.firstName,
-          lastName: data.lastName,
         });
         setStatus("sent");
       } else {
-        throw new Error(data.message || "Неизвестная ошибка");
+        // Фолбэк для тестирования вне Telegram
+        console.log("Form payload (not in Telegram):", payload);
+        setStatus("sent");
+        setStatusMessage(
+          "Форма работает. Откройте её через Telegram, чтобы завершить регистрацию."
+        );
       }
     } catch (error) {
-      console.error(error);
+      console.error("Registration error:", error);
       setStatus("error");
       setStatusMessage(
         error instanceof Error
