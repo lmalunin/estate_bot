@@ -28,7 +28,7 @@ export function WelcomePage({
 
     try {
       const response = await fetch(
-        "https://shiny-walls-obey.loca.lt/api/message",
+        "https://dry-memes-chew.loca.lt/api/message",
         {
           method: "POST",
           headers: {
@@ -119,4 +119,3 @@ export function WelcomePage({
     </main>
   );
 }
-
