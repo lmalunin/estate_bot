@@ -14,10 +14,22 @@ function App() {
     []
   );
 
-  const clientConfig = useMemo(
+  /*   const clientConfig = useMemo(
     () => decodeStartParam(telegramApp?.initDataUnsafe?.start_param ?? null),
     [telegramApp]
-  );
+  ); */
+
+  const clientConfig = useMemo(() => {
+    const rawStartParam = telegramApp?.initDataUnsafe?.start_param ?? null;
+    const fallbackParam = urlParams.get("tgWebAppStartParam") ?? null; // Из URL
+    addDebugLog(`🔍 Raw start_param: "${rawStartParam}" (initDataUnsafe)`);
+    addDebugLog(
+      `🔍 Fallback tgWebAppStartParam: "${fallbackParam}" (from URL)`
+    );
+    const paramToUse = rawStartParam || fallbackParam; // Fallback, если initDataUnsafe глючит
+    return decodeStartParam(paramToUse);
+  }, [telegramApp, urlParams]);
+
   const messageApiUrl = clientConfig.backend ?? "";
 
   // Проверяем URL параметры для страницы приветствия
