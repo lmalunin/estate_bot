@@ -6,20 +6,21 @@ import { WelcomePage } from "./components/WelcomePage";
 import "./App.scss";
 import { decodeStartParam } from "./utils/startParam";
 
-const DEFAULT_MESSAGE_API_URL = "";
-
 function App() {
   const telegramApp = (window as TelegramWindow).Telegram?.WebApp;
   const isTelegramEnvironment = Boolean(telegramApp);
+  const urlParams = useMemo(
+    () => new URLSearchParams(window.location.search),
+    []
+  );
 
   const clientConfig = useMemo(
     () => decodeStartParam(telegramApp?.initDataUnsafe?.start_param ?? null),
     [telegramApp]
   );
-  const messageApiUrl = clientConfig.backend ?? DEFAULT_MESSAGE_API_URL;
+  const messageApiUrl = clientConfig.backend ?? "";
 
   // Проверяем URL параметры для страницы приветствия
-  const urlParams = new URLSearchParams(window.location.search);
   const isWelcomePage = urlParams.get("welcome") === "1";
   const welcomeFirstName = urlParams.get("firstName") || "";
   const welcomeLastName = urlParams.get("lastName") || "";
