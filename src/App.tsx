@@ -21,14 +21,14 @@ function App() {
 
   const clientConfig = useMemo(() => {
     const rawStartParam = telegramApp?.initDataUnsafe?.start_param ?? null;
-    const fallbackParam = urlParams.get("tgWebAppStartParam") ?? null; // Из URL
+    //const fallbackParam = urlParams.get("tgWebAppStartParam") ?? null; // Из URL
     addDebugLog(`🔍 Raw start_param: "${rawStartParam}" (initDataUnsafe)`);
-    addDebugLog(
-      `🔍 Fallback tgWebAppStartParam: "${fallbackParam}" (from URL)`
-    );
-    const paramToUse = rawStartParam || fallbackParam; // Fallback, если initDataUnsafe глючит
+    // addDebugLog(
+    //   `🔍 Fallback tgWebAppStartParam: "${fallbackParam}" (from URL)`
+    // );
+    const paramToUse = rawStartParam; //|| fallbackParam; // Fallback, если initDataUnsafe глючит
     return decodeStartParam(paramToUse);
-  }, [telegramApp, urlParams]);
+  }, [telegramApp]);
 
   const messageApiUrl = clientConfig.backend ?? "";
 
@@ -86,7 +86,7 @@ function App() {
   const addDebugLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setDebugLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
-    console.log(message); // Также в консоль для обычных браузеров
+    //console.log(message); // Также в консоль для обычных браузеров
   };
 
   const onSubmit = handleSubmit(async (values) => {
