@@ -1,0 +1,104 @@
+.contract-page {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 20px;
+    color: var(--tg-text, #000);
+  }
+
+  .download-section {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .download-button {
+    padding: 12px 24px;
+    background: var(--tg-accent, #0088cc);
+    color: var(--tg-accent-text, #fff);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+
+  .pdf-viewer {
+    margin-bottom: 30px;
+    border: 1px solid var(--tg-muted, #ccc);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--tg-bg, #fff);
+  }
+
+  .confirm-section {
+    text-align: center;
+  }
+
+  .confirmed-section {
+    text-align: center;
+    padding: 30px 20px;
+
+    .checkmark {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+
+    .confirmed-text {
+      font-size: 20px;
+      font-weight: 500;
+      color: #4caf50;
+      margin-bottom: 10px;
+    }
+
+    .waiting-text {
+      color: var(--tg-text, #000);
+      line-height: 1.5;
+    }
+  }
+
+  .error-message {
+    padding: 12px;
+    background: #ffebee;
+    color: #c62828;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
+  .primary-button {
+    width: 100%;
+    padding: 12px 24px;
+    background: var(--tg-accent, #0088cc);
+    color: var(--tg-accent-text, #fff);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    &:active:not(:disabled) {
+      opacity: 0.8;
+    }
+  }
+}
+

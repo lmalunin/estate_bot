@@ -1,0 +1,50 @@
+.home-page {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  h1 {
+    margin-bottom: 20px;
+    color: var(--tg-text, #000);
+  }
+
+  .user-info {
+    background: var(--tg-bg, #fff);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+
+    p {
+      margin: 10px 0;
+      color: var(--tg-text, #000);
+    }
+  }
+
+  .description {
+    margin-bottom: 20px;
+    color: var(--tg-text, #000);
+    line-height: 1.5;
+  }
+
+  .primary-button {
+    width: 100%;
+    padding: 12px 24px;
+    background: var(--tg-accent, #0088cc);
+    color: var(--tg-accent-text, #fff);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+}
+

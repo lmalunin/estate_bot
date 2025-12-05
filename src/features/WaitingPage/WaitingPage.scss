@@ -1,0 +1,40 @@
+.waiting-page {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--tg-muted, #f0f0f0);
+    border-top-color: var(--tg-accent, #0088cc);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  h1 {
+    margin-bottom: 15px;
+    color: var(--tg-text, #000);
+  }
+
+  p {
+    margin-bottom: 10px;
+    color: var(--tg-text, #000);
+    line-height: 1.5;
+  }
+
+  .status {
+    margin-top: 20px;
+    font-weight: 500;
+    color: var(--tg-accent, #0088cc);
+  }
+}
+
