@@ -1,60 +1,67 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUser, logAction, updateUserState } from "../../utils/api";
+import { getUser, logAction, updateUserState, type UserData } from "../../utils/api";
 import "./Home.scss";
 
 export function Home() {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const init = async () => {
       // Логируем открытие страницы
       await logAction("page_view", "home", "Пользователь открыл страницу приветствия");
       
-      // Получаем данные пользователя
+      // Получаем данные пользователя из БД
       const user = await getUser();
       
-      if (user && user.state) {
-        // Если есть state, редиректим на соответствующую страницу
-        if (user.state === "application") {
-          navigate("/application");
-          return;
-        }
-        if (user.state === "waiting") {
-          navigate("/waiting");
-          return;
-        }
-        if (user.state === "contract") {
-          navigate("/contract");
-          return;
-        }
-        if (user.state === "rejected") {
-          navigate("/rejected");
-          return;
+      if (user) {
+        setUserData(user);
+        
+        // Если state пустой или "home", обновляем его
+        if (!user.state || user.state === "" || user.state === "home") {
+          await updateUserState("home");
         }
       }
       
-      // Если state пустой или "home", обновляем его
-      if (!user || !user.state || user.state === "") {
-        await updateUserState("home");
-      }
+      setLoading(false);
     };
 
     init();
   }, [navigate]);
 
-  // Получаем данные из Telegram для отображения
+  // Используем данные из БД, если они есть, иначе fallback на Telegram WebApp
   const telegramApp = (window as any).Telegram?.WebApp;
-  const user = telegramApp?.initDataUnsafe?.user;
-  const username = user?.username ? `@${user.username}` : "не указан";
-  const phone = user?.phone_number || "не указан";
+  const telegramUser = telegramApp?.initDataUnsafe?.user;
+  
+  const username = userData?.telegram_username 
+    || (telegramUser?.username ? `@${telegramUser.username}` : "") 
+    || "не указан";
+  
+  const phone = userData?.phone 
+    || telegramUser?.phone_number 
+    || "не указан";
+
+  if (loading) {
+    return (
+      <div className="home-page">
+        <p>Загрузка...</p>
+      </div>
+    );
+  }
+
+  // Форматируем username - если начинается с @, оставляем как есть, иначе добавляем
+  const displayUsername = username && username !== "не указан" 
+    ? (username.startsWith("@") ? username : `@${username}`)
+    : "не указан";
 
   return (
     <div className="home-page">
       <h1>Добро пожаловать!</h1>
       <div className="user-info">
         <p>
-          <strong>Ваш логин в Telegram:</strong> {username}
+          <strong>Ваш логин в Telegram:</strong> {displayUsername}
         </p>
         <p>
           <strong>Ваш телефон:</strong> {phone}

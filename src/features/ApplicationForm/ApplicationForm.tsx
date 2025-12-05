@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { logAction, submitApplication, updateUserState } from "../../utils/api";
+import {
+  getUser,
+  logAction,
+  submitApplication,
+  updateUserState,
+  type UserData,
+} from "../../utils/api";
 import "./ApplicationForm.scss";
 
 interface FormValues {
@@ -13,13 +19,43 @@ export function ApplicationForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
 
+  // Получаем данные пользователя из БД
+  useEffect(() => {
+    const loadUser = async () => {
+      const user = await getUser();
+      if (user) {
+        setUserData(user);
+      }
+      setLoadingUser(false);
+    };
+    loadUser();
+  }, []);
+
+  // Fallback на данные из Telegram WebApp, если их нет в БД
   const telegramApp = (window as any).Telegram?.WebApp;
-  const user = telegramApp?.initDataUnsafe?.user;
-  const username = user?.username ? `@${user.username}` : "не указан";
-  const phone = user?.phone_number || "не указан";
-  const firstName = user?.first_name || "";
-  const lastName = user?.last_name || "";
+  const telegramUser = telegramApp?.initDataUnsafe?.user;
+
+  const username =
+    userData?.telegram_username ||
+    (telegramUser?.username ? `@${telegramUser.username}` : "") ||
+    "не указан";
+
+  const phone = userData?.phone || telegramUser?.phone_number || "не указан";
+
+  const firstName = userData?.first_name || telegramUser?.first_name || "";
+
+  const lastName = userData?.last_name || telegramUser?.last_name || "";
+
+  // Форматируем username
+  const displayUsername =
+    username && username !== "не указан"
+      ? username.startsWith("@")
+        ? username
+        : `@${username}`
+      : "не указан";
 
   const {
     register,
@@ -35,7 +71,11 @@ export function ApplicationForm() {
 
   useEffect(() => {
     const init = async () => {
-      await logAction("page_view", "application", "Пользователь открыл страницу анкеты");
+      await logAction(
+        "page_view",
+        "application",
+        "Пользователь открыл страницу анкеты"
+      );
       await updateUserState("application");
     };
 
@@ -52,7 +92,11 @@ export function ApplicationForm() {
 
     if (result.success) {
       await updateUserState("waiting");
-      await logAction("button_click", "application", "Анкета успешно отправлена");
+      await logAction(
+        "button_click",
+        "application",
+        "Анкета успешно отправлена"
+      );
       navigate("/waiting");
     } else {
       setError(result.message || "Ошибка при отправке анкеты");
@@ -64,24 +108,28 @@ export function ApplicationForm() {
     <div className="application-form">
       <h1>Заполнение анкеты</h1>
 
-      <div className="readonly-fields">
-        <div className="field">
-          <label>Ник в Telegram</label>
-          <input type="text" value={username} disabled />
+      {loadingUser ? (
+        <p>Загрузка данных...</p>
+      ) : (
+        <div className="readonly-fields">
+          <div className="field">
+            <label>Ник в Telegram</label>
+            <input type="text" value={displayUsername} disabled />
+          </div>
+          <div className="field">
+            <label>Телефон</label>
+            <input type="text" value={phone} disabled />
+          </div>
+          <div className="field">
+            <label>Имя</label>
+            <input type="text" value={firstName || "не указано"} disabled />
+          </div>
+          <div className="field">
+            <label>Фамилия</label>
+            <input type="text" value={lastName || "не указано"} disabled />
+          </div>
         </div>
-        <div className="field">
-          <label>Телефон</label>
-          <input type="text" value={phone} disabled />
-        </div>
-        <div className="field">
-          <label>Имя</label>
-          <input type="text" value={firstName || "не указано"} disabled />
-        </div>
-        <div className="field">
-          <label>Фамилия</label>
-          <input type="text" value={lastName || "не указано"} disabled />
-        </div>
-      </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="field">
@@ -95,7 +143,8 @@ export function ApplicationForm() {
               required: "Номер паспорта обязателен",
               pattern: {
                 value: /^[\d\s-]+$/,
-                message: "Номер паспорта должен содержать только цифры, пробелы и дефисы",
+                message:
+                  "Номер паспорта должен содержать только цифры, пробелы и дефисы",
               },
             })}
             placeholder="1234 567890"
@@ -116,7 +165,8 @@ export function ApplicationForm() {
               required: "Номер СНИЛС обязателен",
               pattern: {
                 value: /^[\d\s-]+$/,
-                message: "Номер СНИЛС должен содержать только цифры, пробелы и дефисы",
+                message:
+                  "Номер СНИЛС должен содержать только цифры, пробелы и дефисы",
               },
             })}
             placeholder="123-456-789 01"
@@ -139,4 +189,3 @@ export function ApplicationForm() {
     </div>
   );
 }
-
