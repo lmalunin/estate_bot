@@ -26,6 +26,7 @@ export function ApplicationForm() {
   useEffect(() => {
     const loadUser = async () => {
       const user = await getUser();
+
       if (user) {
         setUserData(user);
       }

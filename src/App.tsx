@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import type { TelegramWindow } from "./types";
 import { Home } from "./pages/Home/Home";
@@ -8,12 +8,38 @@ import { ContractPage } from "./features/ContractPage/ContractPage";
 import { RejectedPage } from "./features/RejectedPage/RejectedPage";
 import { getUser } from "./utils/api";
 import "./App.scss";
+import { DebugPanel } from "./components/DebugPanel";
+import { decodeStartParam } from "./utils/startParam";
 
 function App() {
   const navigate = useNavigate();
   const [initialized, setInitialized] = useState(false);
   const telegramApp = (window as TelegramWindow).Telegram?.WebApp;
   const isTelegramEnvironment = Boolean(telegramApp);
+  const urlParams = useMemo(
+    () => new URLSearchParams(window.location.search),
+    []
+  );
+
+  // Теперь чистый useMemo без side-effects
+  const clientConfig = useMemo(() => {
+    const rawStartParam = telegramApp?.initDataUnsafe?.start_param ?? null;
+    const fallbackParam = urlParams.get("tgWebAppStartParam") ?? null;
+    const paramToUse = rawStartParam || fallbackParam;
+
+    const decoded = decodeStartParam(paramToUse);
+    return decoded.backend || "";
+  }, [telegramApp, urlParams]);
+
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showDebug, setShowDebug] = useState(false);
+
+  // Стабилизируем addDebugLog (добавьте это перед useMemo для clientConfig)
+  const addDebugLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
+    console.log(message); // Для fallback в обычном браузере
+  }, []); // Нет deps, так как timestamp динамичный, но setDebugLogs стабилен
 
   useEffect(() => {
     if (!telegramApp) {
@@ -21,6 +47,14 @@ function App() {
       setInitialized(true);
       return;
     }
+
+    const rawStartParam = telegramApp.initDataUnsafe?.start_param ?? null;
+    const fallbackParam = urlParams.get("tgWebAppStartParam") ?? null;
+    addDebugLog(`🔍 Raw start_param: "${rawStartParam}" (initDataUnsafe)`);
+    addDebugLog(
+      `🔍 Fallback tgWebAppStartParam: "${fallbackParam}" (from URL)`
+    );
+    addDebugLog(`🔧 clientConfig: ${JSON.stringify(clientConfig)}`); // ← Дополнительный лог для проверки возврата
 
     telegramApp.ready();
     telegramApp.expand();
@@ -41,7 +75,7 @@ function App() {
     // Проверяем state пользователя при инициализации
     const checkUserState = async () => {
       const user = await getUser();
-      
+
       if (user && user.state) {
         // Редиректим на соответствующую страницу в зависимости от state
         if (user.state === "application") {
@@ -60,12 +94,12 @@ function App() {
         // Пользователь не найден или state пустой - показываем главную
         navigate("/", { replace: true });
       }
-      
+
       setInitialized(true);
     };
 
     checkUserState();
-  }, [navigate, telegramApp]);
+  }, [navigate, telegramApp, clientConfig]);
 
   // Показываем загрузку пока не инициализировались
   if (!initialized && isTelegramEnvironment) {
@@ -88,6 +122,15 @@ function App() {
         {/* Fallback на главную */}
         <Route path="*" element={<Home />} />
       </Routes>
+
+      <div className="debug-panel-container">
+        <DebugPanel
+          debugLogs={debugLogs}
+          setDebugLogs={setDebugLogs}
+          showDebug={showDebug}
+          setShowDebug={setShowDebug}
+        />
+      </div>
     </div>
   );
 }

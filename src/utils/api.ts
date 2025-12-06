@@ -46,9 +46,9 @@ export function getChatId(): number | null {
 // Получить API URL из конфига или переменной окружения
 export function getApiUrl(): string {
   // В DEV — всегда localhost:8080 (если бот запущен локально)
-  if (import.meta.env.DEV) {
-    return "http://localhost:8080";
-  }
+  // if (import.meta.env.DEV) {
+  //   return "http://localhost:8080";
+  // }
 
   // В PROD — как раньше: из start_param или VITE_API_URL
   const telegramApp = (window as any).Telegram?.WebApp;
