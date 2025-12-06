@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUser, logAction, updateUserState, type UserData } from "../../utils/api";
+import {
+  getUser,
+  logAction,
+  updateUserState,
+  type UserData,
+} from "../../utils/api";
 import "./Home.scss";
 
 export function Home() {
@@ -11,20 +16,24 @@ export function Home() {
   useEffect(() => {
     const init = async () => {
       // Логируем открытие страницы
-      await logAction("page_view", "home", "Пользователь открыл страницу приветствия");
-      
+      await logAction(
+        "page_view",
+        "home",
+        "Пользователь открыл страницу приветствия"
+      );
+
       // Получаем данные пользователя из БД
       const user = await getUser();
-      
+
       if (user) {
         setUserData(user);
-        
+
         // Если state пустой или "home", обновляем его
         if (!user.state || user.state === "" || user.state === "home") {
           await updateUserState("home");
         }
       }
-      
+
       setLoading(false);
     };
 
@@ -34,14 +43,13 @@ export function Home() {
   // Используем данные из БД, если они есть, иначе fallback на Telegram WebApp
   const telegramApp = (window as any).Telegram?.WebApp;
   const telegramUser = telegramApp?.initDataUnsafe?.user;
-  
-  const username = userData?.telegram_username 
-    || (telegramUser?.username ? `@${telegramUser.username}` : "") 
-    || "не указан";
-  
-  const phone = userData?.phone 
-    || telegramUser?.phone_number 
-    || "не указан";
+
+  const username =
+    userData?.telegram_username ||
+    (telegramUser?.username ? `@${telegramUser.username}` : "") ||
+    "не указан";
+
+  const phone = userData?.phone || telegramUser?.phone_number || "не указан";
 
   if (loading) {
     return (
@@ -52,9 +60,12 @@ export function Home() {
   }
 
   // Форматируем username - если начинается с @, оставляем как есть, иначе добавляем
-  const displayUsername = username && username !== "не указан" 
-    ? (username.startsWith("@") ? username : `@${username}`)
-    : "не указан";
+  const displayUsername =
+    username && username !== "не указан"
+      ? username.startsWith("@")
+        ? username
+        : `@${username}`
+      : "не указан";
 
   return (
     <div className="home-page">
@@ -68,12 +79,17 @@ export function Home() {
         </p>
       </div>
       <p className="description">
-        Для продолжения необходимо заполнить анкету. Нажмите кнопку ниже, чтобы начать.
+        Для продолжения необходимо заполнить анкету. Нажмите кнопку ниже, чтобы
+        начать.
       </p>
       <button
         className="primary-button"
         onClick={async () => {
-          await logAction("button_click", "home", "Нажата кнопка 'Заполнить анкету'");
+          await logAction(
+            "button_click",
+            "home",
+            "Нажата кнопка 'Заполнить анкету'"
+          );
           await updateUserState("application");
           navigate("/application");
         }}
@@ -83,4 +99,3 @@ export function Home() {
     </div>
   );
 }
-
