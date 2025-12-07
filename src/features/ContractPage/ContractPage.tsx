@@ -8,14 +8,20 @@ import {
   updateUserState,
 } from "../../utils/api";
 import "./ContractPage.scss";
+import type { DebugProps } from "../../types";
 
-export function ContractPage() {
+export function ContractPage({ messageApiUrl, setDebugLogs }: DebugProps) {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const urlLog = `ContractPage 🔗 messageApiUrl: ${messageApiUrl}`;
+    setDebugLogs((prev) => [...prev, urlLog]);
+  }, [messageApiUrl, setDebugLogs]);
 
   useEffect(() => {
     const init = async () => {
@@ -26,7 +32,7 @@ export function ContractPage() {
       );
       await updateUserState("contract");
 
-      const user = await getUser();
+      const user = await getUser(messageApiUrl);
       if (user?.contract_confirmed) {
         setConfirmed(true);
       }

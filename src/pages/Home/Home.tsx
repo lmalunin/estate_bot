@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getUser,
@@ -7,11 +7,24 @@ import {
   type UserData,
 } from "../../utils/api";
 import "./Home.scss";
+import type { DebugProps } from "../../types";
 
-export function Home() {
+export function Home({ messageApiUrl, setDebugLogs }: DebugProps) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Стабилизируем addDebugLog (добавьте это перед useMemo для clientConfig)
+  const addDebugLog = useCallback((message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
+    console.log(message); // Для fallback в обычном браузере
+  }, []); // Нет deps, так как timestamp динамичный, но setDebugLogs стабилен
+
+  useEffect(() => {
+    const urlLog = `Home 🔗 messageApiUrl: ${messageApiUrl}`;
+    setDebugLogs((prev) => [...prev, urlLog]);
+  }, [messageApiUrl, setDebugLogs]);
 
   useEffect(() => {
     const init = async () => {
@@ -23,7 +36,9 @@ export function Home() {
       );
 
       // Получаем данные пользователя из БД
-      const user = await getUser();
+      const user = await getUser(messageApiUrl);
+
+      addDebugLog(`🔍 Home - user: "${user}"`);
 
       if (user) {
         setUserData(user);

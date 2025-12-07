@@ -45,3 +45,7 @@ export type WelcomePageProps = {
   messageApiUrl: string;
 };
 
+export type DebugProps = {
+  setDebugLogs: React.Dispatch<React.SetStateAction<string[]>>;
+  messageApiUrl: string;
+};

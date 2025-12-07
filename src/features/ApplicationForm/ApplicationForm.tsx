@@ -9,23 +9,30 @@ import {
   type UserData,
 } from "../../utils/api";
 import "./ApplicationForm.scss";
+import type { DebugProps } from "../../types";
 
 interface FormValues {
   passportNumber: string;
   snils: string;
 }
 
-export function ApplicationForm() {
+export function ApplicationForm({ messageApiUrl, setDebugLogs }: DebugProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  useEffect(() => {
+    const urlLog = `ApplicationForm 🔗 messageApiUrl: ${messageApiUrl}`;
+    setDebugLogs((prev) => [...prev, urlLog]);
+  }, [messageApiUrl, setDebugLogs]);
+
   // Получаем данные пользователя из БД
   useEffect(() => {
     const loadUser = async () => {
-      const user = await getUser();
+      const user = await getUser(messageApiUrl);
+
       if (user) {
         setUserData(user);
       }

@@ -15,8 +15,8 @@ if (import.meta.env.DEV && !(window as any).Telegram?.WebApp) {
     language_code: "ru",
   };
 
-  // 💡 base64 от http://localhost:8080/api/message
-  const mockStartParam = "aHR0cDovL2xvY2FsaG9zdDo4MDgwL2FwaS9tZXNzYWdl";
+  // 💡 base64 от http://localhost:8080
+  const mockStartParam = "aHR0cDovL2xvY2FsaG9zdDo4MDgw";
 
   (window as any).Telegram = {
     WebApp: {

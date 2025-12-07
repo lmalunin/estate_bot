@@ -46,9 +46,9 @@ export function getChatId(): number | null {
 // Получить API URL из конфига или переменной окружения
 export function getApiUrl(): string {
   // В DEV — всегда localhost:8080 (если бот запущен локально)
-  if (import.meta.env.DEV) {
-    return "http://localhost:8080";
-  }
+  // if (import.meta.env.DEV) {
+  //   return "http://localhost:8080";
+  // }
 
   // В PROD — как раньше: из start_param или VITE_API_URL
   const telegramApp = (window as any).Telegram?.WebApp;
@@ -84,7 +84,7 @@ export function createHeaders(): HeadersInit {
 }
 
 // GET /api/user
-export async function getUser(): Promise<UserData | null> {
+export async function getUser(messageApiUrl: string): Promise<UserData | null> {
   const chatId = getChatId();
   if (!chatId) {
     console.error("Chat ID not found");
@@ -92,7 +92,7 @@ export async function getUser(): Promise<UserData | null> {
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/api/user`, {
+    const response = await fetch(`${messageApiUrl}/api/user`, {
       method: "GET",
       headers: createHeaders(),
     });
